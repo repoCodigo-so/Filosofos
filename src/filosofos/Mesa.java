@@ -4,43 +4,41 @@
  */
 package filosofos;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 /**
  *
  * @author User
  */
+import javax.swing.JButton;
+import javax.swing.SwingUtilities;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class Mesa {
     private Tenedor[] tenedores;
-    private Filosofo[] filosofos;
+    private JButton[] botonesFilosofos;
 
-    public Mesa(int numFilosofos) {
+    public Mesa(int numFilosofos, JButton[] botonesFilosofos) {
         tenedores = new Tenedor[numFilosofos];
-        filosofos = new Filosofo[numFilosofos];
+        this.botonesFilosofos = botonesFilosofos;
 
         // Inicializar tenedores
         for (int i = 0; i < numFilosofos; i++) {
             tenedores[i] = new Tenedor(i);
         }
-
-        // Inicializar filósofos
-        for (int i = 0; i < numFilosofos; i++) {
-            Tenedor tenedorIzquierdo = tenedores[i];
-            Tenedor tenedorDerecho = tenedores[(i + 1) % numFilosofos]; // Tenedor a la derecha
-            filosofos[i] = new Filosofo(i, tenedorIzquierdo, tenedorDerecho, this);
-        }
     }
 
     public void iniciarCena() {
         // Iniciar un hilo para cada filósofo
-        for (Filosofo filosofo : filosofos) {
-            Thread thread = new Thread(filosofo);
+        for (int i = 0; i < botonesFilosofos.length; i++) {
+            JButton botonFilosofo = botonesFilosofos[i];
+            Thread thread = new Thread(new Filosofo(i, tenedores[i], getTenedorDerecho(i), this, botonFilosofo));
             thread.start();
         }
     }
 
-    public synchronized void tomarTenedor(Tenedor tenedorIzquierdo, Tenedor tenedorDerecho) {
+    public synchronized void tomarTenedor(Tenedor tenedorIzquierdo, Tenedor tenedorDerecho, JButton botonFilosofo) {
         // Esperar hasta que ambos tenedores estén disponibles
         while (!tenedorIzquierdo.estaDisponible() || !tenedorDerecho.estaDisponible()) {
             try {
@@ -53,22 +51,42 @@ public class Mesa {
         try {
             // Tomar los tenedores
             tenedorIzquierdo.agarrar();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Mesa.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
             tenedorDerecho.agarrar();
         } catch (InterruptedException ex) {
             Logger.getLogger(Mesa.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+        // Actualizar el estado del botón del filósofo
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                botonFilosofo.setText("Filósofo " + botonFilosofo.getName() + " - Comiendo");
+            }
+        });
     }
 
-    public synchronized void soltarTenedor(Tenedor tenedorIzquierdo, Tenedor tenedorDerecho) {
+    public synchronized void soltarTenedor(Tenedor tenedorIzquierdo, Tenedor tenedorDerecho, JButton botonFilosofo) {
         // Soltar los tenedores
         tenedorIzquierdo.soltar();
         tenedorDerecho.soltar();
 
+        // Actualizar el estado del botón del filósofo
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                botonFilosofo.setText("Filósofo " + botonFilosofo.getName() + " - Pensando");
+            }
+        });
+
         // Notificar a otros filósofos que los tenedores están disponibles
         notifyAll();
+    }
+
+    public Tenedor getTenedorIzquierdo(int filosofoIndex) {
+        return tenedores[filosofoIndex];
+    }
+
+    public Tenedor getTenedorDerecho(int filosofoIndex) {
+        return tenedores[(filosofoIndex + 1) % tenedores.length];
     }
 }

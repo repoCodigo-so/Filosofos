@@ -8,17 +8,23 @@ package filosofos;
  *
  * @author User
  */
+import javax.swing.JButton;
+import javax.swing.SwingUtilities;
+
 public class Filosofo implements Runnable {
+
     private int id;
     private Tenedor tenedorIzquierdo;
     private Tenedor tenedorDerecho;
     private Mesa mesa;
+    private JButton botonFilosofo; // Agregar una referencia al botón correspondiente en la interfaz
 
-    public Filosofo(int id, Tenedor tenedorIzquierdo, Tenedor tenedorDerecho, Mesa mesa) {
+    public Filosofo(int id, Tenedor tenedorIzquierdo, Tenedor tenedorDerecho, Mesa mesa, JButton botonFilosofo) {
         this.id = id;
         this.tenedorIzquierdo = tenedorIzquierdo;
         this.tenedorDerecho = tenedorDerecho;
         this.mesa = mesa;
+        this.botonFilosofo = botonFilosofo; // Asignar el botón de la interfaz al filósofo
     }
 
     @Override
@@ -42,7 +48,16 @@ public class Filosofo implements Runnable {
     }
 
     private void tomarTenedores() {
-        mesa.tomarTenedor(tenedorIzquierdo, tenedorDerecho);
+        final JButton botonFilosofo = this.botonFilosofo; // Declara como final
+
+        mesa.tomarTenedor(tenedorIzquierdo, tenedorDerecho, botonFilosofo);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                botonFilosofo.setText("Filósofo " + id + " - Comiendo");
+            }
+        });
     }
 
     private void comer() {
@@ -56,6 +71,15 @@ public class Filosofo implements Runnable {
     }
 
     private void soltarTenedores() {
-        mesa.soltarTenedor(tenedorIzquierdo, tenedorDerecho);
+        final JButton botonFilosofo = this.botonFilosofo; // Declara como final
+
+        mesa.soltarTenedor(tenedorIzquierdo, tenedorDerecho, botonFilosofo);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                botonFilosofo.setText("Filósofo " + id + " - Pensando");
+            }
+        });
     }
 }
