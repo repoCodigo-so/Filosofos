@@ -43,7 +43,6 @@ public class FilosofoGui extends JFrame {
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setResizable(false);
 
         for (int i = 0; i < numFilosofosIniciales; i++) {
             estadosTenedores[i] = EstadoTenedor.LIBRE;
