@@ -18,14 +18,16 @@ import java.util.logging.Logger;
 public class Mesa {
     private Tenedor[] tenedores;
     private JButton[] botonesFilosofos;
+    private JButton[] botonesTenedores; // Agregamos un arreglo de botones para los tenedores
 
-    public Mesa(int numFilosofos, JButton[] botonesFilosofos) {
+    public Mesa(int numFilosofos, JButton[] botonesFilosofos, JButton[] botonesTenedores) {
         tenedores = new Tenedor[numFilosofos];
         this.botonesFilosofos = botonesFilosofos;
+        this.botonesTenedores = botonesTenedores;
 
         // Inicializar tenedores
         for (int i = 0; i < numFilosofos; i++) {
-            tenedores[i] = new Tenedor(i);
+            tenedores[i] = new Tenedor(i, botonesTenedores[i]); // Pasar el botón del tenedor
         }
     }
 
@@ -63,6 +65,24 @@ public class Mesa {
                 botonFilosofo.setText("Filósofo " + botonFilosofo.getName() + " - Comiendo");
             }
         });
+
+        // Actualizar el estado y color del botón del tenedor izquierdo a Ocupado y Rojo
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                botonesTenedores[tenedorIzquierdo.getId()].setText("Tenedor " + tenedorIzquierdo.getId() + " - Ocupado");
+                botonesTenedores[tenedorIzquierdo.getId()].setBackground(java.awt.Color.RED);
+            }
+        });
+
+        // Actualizar el estado y color del botón del tenedor derecho a Ocupado y Rojo
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                botonesTenedores[tenedorDerecho.getId()].setText("Tenedor " + tenedorDerecho.getId() + " - Ocupado");
+                botonesTenedores[tenedorDerecho.getId()].setBackground(java.awt.Color.RED);
+            }
+        });
     }
 
     public synchronized void soltarTenedor(Tenedor tenedorIzquierdo, Tenedor tenedorDerecho, JButton botonFilosofo) {
@@ -75,6 +95,24 @@ public class Mesa {
             @Override
             public void run() {
                 botonFilosofo.setText("Filósofo " + botonFilosofo.getName() + " - Pensando");
+            }
+        });
+
+        // Actualizar el estado y color del botón del tenedor izquierdo a Libre y restablecer su color
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                botonesTenedores[tenedorIzquierdo.getId()].setText("Tenedor " + tenedorIzquierdo.getId() + " - Libre");
+                botonesTenedores[tenedorIzquierdo.getId()].setBackground(null);
+            }
+        });
+
+        // Actualizar el estado y color del botón del tenedor derecho a Libre y restablecer su color
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                botonesTenedores[tenedorDerecho.getId()].setText("Tenedor " + tenedorDerecho.getId() + " - Libre");
+                botonesTenedores[tenedorDerecho.getId()].setBackground(null);
             }
         });
 

@@ -31,7 +31,7 @@ public class FilosofoGui extends JFrame {
         this.estadosFilosofos = new EstadoFilosofo[numFilosofosIniciales];
         this.filosofos = new JButton[numFilosofosIniciales];
         this.tenedores = new JButton[numFilosofosIniciales];
-        this.mesa = new Mesa(numFilosofosIniciales, filosofos); // Pasar el arreglo de botones de filósofos a la Mesa
+        this.mesa = new Mesa(numFilosofosIniciales, filosofos, tenedores); // Pasar el arreglo de botones de filósofos y tenedores a la Mesa
 
         // Configurar la ventana principal
         setTitle("Cena de los Filósofos");
@@ -149,7 +149,13 @@ public class FilosofoGui extends JFrame {
         }
 
         for (int i = 0; i < numFilosofos; i++) {
-            tenedores[i].setText("Tenedor " + i + " - " + estadosTenedores[i].getNombreEstado());
+            if (estadosTenedores[i] == EstadoTenedor.OCUPADO) {
+                tenedores[i].setText("Tenedor " + i + " - Ocupado");
+                tenedores[i].setBackground(Color.RED); // Cambiar el color a rojo cuando el tenedor esté ocupado
+            } else {
+                tenedores[i].setText("Tenedor " + i + " - Libre");
+                tenedores[i].setBackground(null); // Restablecer el color por defecto cuando el tenedor esté libre
+            }
         }
     }
 
