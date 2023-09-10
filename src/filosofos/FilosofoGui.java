@@ -8,7 +8,6 @@ package filosofos;
  *
  * @author User
  */
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -107,9 +106,31 @@ public class FilosofoGui extends JFrame {
             add(ajustarTiempoButton);
         }
 
+        // Botón para ajustar el número de participantes (filósofos)
+        JButton ajustarParticipantesButton = new JButton("Ajustar Participantes");
+        ajustarParticipantesButton.setBounds(50, 50 + numFilosofosIniciales * 40 + 40, 200, 30);
+        ajustarParticipantesButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Pedir al usuario el nuevo número de participantes (filósofos)
+                String nuevoNumParticipantesStr = JOptionPane.showInputDialog("Nuevo número de participantes (filósofos):");
+                try {
+                    int nuevoNumParticipantes = Integer.parseInt(nuevoNumParticipantesStr);
+                    if (nuevoNumParticipantes >= 2 && nuevoNumParticipantes <= 10) {
+                        ajustarNumParticipantes(nuevoNumParticipantes);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "El número de participantes debe estar entre 2 y 10.");
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Por favor, ingrese un valor numérico válido.");
+                }
+            }
+        });
+        add(ajustarParticipantesButton);
+
         // Botón para iniciar la simulación automáticamente
         JButton iniciarSimulacionButton = new JButton("Iniciar Simulación Automática");
-        iniciarSimulacionButton.setBounds(50, 50 + numFilosofosIniciales * 40, 250, 30);
+        iniciarSimulacionButton.setBounds(50, 50 + numFilosofosIniciales * 40 + 80, 250, 30);
         iniciarSimulacionButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -120,7 +141,7 @@ public class FilosofoGui extends JFrame {
 
         // Botón para detener la simulación
         JButton detenerSimulacionButton = new JButton("Detener Simulación");
-        detenerSimulacionButton.setBounds(320, 50 + numFilosofosIniciales * 40, 200, 30);
+        detenerSimulacionButton.setBounds(320, 50 + numFilosofosIniciales * 40 + 80, 200, 30);
         detenerSimulacionButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -157,6 +178,124 @@ public class FilosofoGui extends JFrame {
                 tenedores[i].setBackground(null); // Restablecer el color por defecto cuando el tenedor esté libre
             }
         }
+
+        // Cambiar el color de los filósofos que están comiendo a verde
+        for (int i = 0; i < numFilosofos; i++) {
+            if (estadosFilosofos[i] instanceof Comiendo) {
+                filosofos[i].setBackground(Color.GREEN);
+            } else {
+                filosofos[i].setBackground(null);
+            }
+        }
+    }
+
+    private void ajustarNumParticipantes(int nuevoNumParticipantes) {
+        // Detener la simulación si está en ejecución
+        detenerSimulacion();
+        
+        // Limpia la interfaz antes de crear nuevos componentes
+        limpiarInterfaz();
+
+        // Actualizar el número de filósofos y tenedores
+        this.numFilosofos = nuevoNumParticipantes;
+        this.estadosTenedores = new EstadoTenedor[nuevoNumParticipantes];
+        this.estadosFilosofos = new EstadoFilosofo[nuevoNumParticipantes];
+        this.filosofos = new JButton[nuevoNumParticipantes];
+        this.tenedores = new JButton[nuevoNumParticipantes];
+        this.mesa = new Mesa(nuevoNumParticipantes, filosofos, tenedores); // Crear una nueva Mesa con el nuevo número de filósofos
+
+        // Inicializar estados de los tenedores como Libres
+        for (int i = 0; i < nuevoNumParticipantes; i++) {
+            estadosTenedores[i] = EstadoTenedor.LIBRE;
+        }
+
+        // Crear botones para los filósofos y asignar estados iniciales (Pensando)
+        for (int i = 0; i < nuevoNumParticipantes; i++) {
+            filosofos[i] = new JButton("Filósofo " + i + " - Pensando");
+            filosofos[i].setBounds(50, 50 + i * 40, 200, 30);
+
+            estadosFilosofos[i] = new Pensando();
+
+            add(filosofos[i]);
+        }
+
+        // Crear botones para los tenedores y asignar estados iniciales (Libres)
+        for (int i = 0; i < nuevoNumParticipantes; i++) {
+            tenedores[i] = new JButton("Tenedor " + i + " - Libre");
+            tenedores[i].setBounds(300, 50 + i * 40, 200, 30);
+
+            final int index = i;
+            tenedores[i].addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    // Cambiar el estado del tenedor (Libre a Ocupado o viceversa)
+                    if (estadosTenedores[index] == EstadoTenedor.LIBRE) {
+                        estadosTenedores[index] = EstadoTenedor.OCUPADO;
+                    } else {
+                        estadosTenedores[index] = EstadoTenedor.LIBRE;
+                    }
+                    actualizarInterfaz();
+                }
+            });
+
+            add(tenedores[i]);
+        }
+
+        // Crear botones para ajustar el tiempo de comida de los filósofos
+        tiemposComer = new int[nuevoNumParticipantes];
+        Arrays.fill(tiemposComer, 1000); // Inicializar con 1000 milisegundos (1 segundo)
+        for (int i = 0; i < nuevoNumParticipantes; i++) {
+            JButton ajustarTiempoButton = new JButton("Ajustar Tiempo");
+            ajustarTiempoButton.setBounds(500, 50 + i * 40, 150, 30);
+
+            final int index = i;
+            ajustarTiempoButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    // Abrir un cuadro de diálogo para que el usuario ingrese el nuevo tiempo de comida
+                    String nuevoTiempoStr = JOptionPane.showInputDialog("Nuevo tiempo de comida para Filósofo " + index + " (milisegundos):");
+                    try {
+                        int nuevoTiempo = Integer.parseInt(nuevoTiempoStr);
+                        if (nuevoTiempo >= 0) {
+                            tiemposComer[index] = nuevoTiempo;
+                        } else {
+                            JOptionPane.showMessageDialog(null, "El tiempo de comida debe ser un valor no negativo.");
+                        }
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(null, "Por favor, ingrese un valor numérico válido.");
+                    }
+                }
+            });
+
+            add(ajustarTiempoButton);
+        }
+
+        // Ajustar la posición de los botones según el nuevo número de filósofos
+        int heightOffset = nuevoNumParticipantes * 40;
+        for (int i = 0; i < nuevoNumParticipantes; i++) {
+            filosofos[i].setLocation(50, 50 + i * 40);
+            tenedores[i].setLocation(300, 50 + i * 40);
+        }
+
+        // Actualizar la posición de los botones de ajustar tiempo y el botón de iniciar simulación
+        int yPos = 50 + nuevoNumParticipantes * 40 + 40;
+        for (int i = 0; i < nuevoNumParticipantes; i++) {
+            JButton ajustarTiempoButton = (JButton) getContentPane().getComponent(6 + i);
+            ajustarTiempoButton.setLocation(500, yPos + i * 40);
+        }
+
+        JButton ajustarParticipantesButton = (JButton) getContentPane().getComponent(6 + nuevoNumParticipantes);
+        ajustarParticipantesButton.setLocation(50, yPos);
+        JButton iniciarSimulacionButton = (JButton) getContentPane().getComponent(7 + nuevoNumParticipantes);
+        iniciarSimulacionButton.setLocation(50, yPos + 40);
+        JButton detenerSimulacionButton = (JButton) getContentPane().getComponent(8 + nuevoNumParticipantes);
+        detenerSimulacionButton.setLocation(320, yPos + 40);
+
+        // Redimensionar la ventana para acomodar los nuevos componentes
+        setSize(800, 600 + heightOffset);
+
+        // Actualizar la interfaz
+        actualizarInterfaz();
     }
 
     private void iniciarSimulacion() {
@@ -211,6 +350,13 @@ public class FilosofoGui extends JFrame {
 
     private void detenerSimulacion() {
         simulacionEnEjecucion = false;
+    }
+    
+    private void limpiarInterfaz() {
+        getContentPane().removeAll(); // Elimina todos los componentes de la ventana
+        setSize(800, 600); // Restablece el tamaño de la ventana
+        revalidate(); // Valida la nueva disposición de componentes
+        repaint(); // Repinta la ventana
     }
 
     public static void main(String[] args) {
