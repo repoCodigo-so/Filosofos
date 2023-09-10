@@ -27,6 +27,7 @@ public class FilosofoGui extends JFrame {
     private int[] tiemposComer;
     private Random random;
     private JTextArea estadoComidaTextArea;
+    private JScrollPane scrollPane; // Agregamos un JScrollPane
 
     public FilosofoGui(int numFilosofosIniciales) {
         this.numFilosofos = numFilosofosIniciales;
@@ -65,12 +66,17 @@ public class FilosofoGui extends JFrame {
             tenedores[i].addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    // Modificamos para mostrar el filósofo en el JTextArea
+                    String mensaje = "Tenedor " + index + " - ";
                     if (estadosTenedores[index] == EstadoTenedor.LIBRE) {
                         estadosTenedores[index] = EstadoTenedor.OCUPADO;
+                        mensaje += "Ocupado por " + estadosFilosofos[index].getClass().getSimpleName();
                     } else {
                         estadosTenedores[index] = EstadoTenedor.LIBRE;
+                        mensaje += "Libre";
                     }
                     actualizarInterfaz();
+                    actualizarEstadoComida(mensaje);
                 }
             });
 
@@ -105,9 +111,10 @@ public class FilosofoGui extends JFrame {
         }
 
         estadoComidaTextArea = new JTextArea();
-        estadoComidaTextArea.setBounds(50, 50 + numFilosofosIniciales * 40 + 120, 500, 100);
         estadoComidaTextArea.setEditable(false);
-        add(estadoComidaTextArea);
+        scrollPane = new JScrollPane(estadoComidaTextArea); // Agregamos el JScrollPane al JTextArea
+        scrollPane.setBounds(50, 50 + numFilosofosIniciales * 40 + 120, 500, 100);
+        add(scrollPane);
 
         JButton iniciarSimulacionButton = new JButton("Iniciar Simulación Automática");
         iniciarSimulacionButton.setBounds(50, 50 + numFilosofosIniciales * 40 + 40, 250, 30);
@@ -182,6 +189,9 @@ public class FilosofoGui extends JFrame {
             @Override
             public void run() {
                 estadoComidaTextArea.append(mensaje + "\n");
+                // Scroll hasta la parte inferior
+                JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+                verticalScrollBar.setValue(verticalScrollBar.getMaximum());
             }
         });
     }
