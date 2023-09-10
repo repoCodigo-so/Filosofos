@@ -8,22 +8,26 @@ package filosofos;
  *
  * @author User
  */
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
+import java.util.Random;
 
 public class FilosofoGui extends JFrame {
+
     private JButton[] filosofos;
     private JButton[] tenedores;
     private EstadoFilosofo[] estadosFilosofos;
     private EstadoTenedor[] estadosTenedores;
     private int numFilosofos;
     private Mesa mesa;
-    private boolean simulacionEnEjecucion = true; // Variable para controlar la simulación
-    private int[] tiemposComer; // Arreglo para almacenar los tiempos de comida de los filósofos
+    private boolean simulacionEnEjecucion = true;
+    private int[] tiemposComer;
+    private Random random;
+    private JTextArea estadoComidaTextArea;
+    private JScrollPane scrollPane; // Agregamos un JScrollPane
 
     public FilosofoGui(int numFilosofosIniciales) {
         this.numFilosofos = numFilosofosIniciales;
@@ -31,22 +35,20 @@ public class FilosofoGui extends JFrame {
         this.estadosFilosofos = new EstadoFilosofo[numFilosofosIniciales];
         this.filosofos = new JButton[numFilosofosIniciales];
         this.tenedores = new JButton[numFilosofosIniciales];
-        this.mesa = new Mesa(numFilosofosIniciales, filosofos); // Pasar el arreglo de botones de filósofos a la Mesa
+        this.mesa = new Mesa(numFilosofosIniciales, filosofos, tenedores);
+        this.random = new Random();
 
-        // Configurar la ventana principal
         setTitle("Cena de los Filósofos");
         setLayout(null);
-        setSize(800, 600); // Ajusta el tamaño de la ventana según tus necesidades
+        setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
 
-        // Inicializar estados de los tenedores como Libres
         for (int i = 0; i < numFilosofosIniciales; i++) {
             estadosTenedores[i] = EstadoTenedor.LIBRE;
         }
 
-        // Crear botones para los filósofos y asignar estados iniciales (Pensando)
         for (int i = 0; i < numFilosofosIniciales; i++) {
             filosofos[i] = new JButton("Filósofo " + i + " - Pensando");
             filosofos[i].setBounds(50, 50 + i * 40, 200, 30);
@@ -56,7 +58,6 @@ public class FilosofoGui extends JFrame {
             add(filosofos[i]);
         }
 
-        // Crear botones para los tenedores y asignar estados iniciales (Libres)
         for (int i = 0; i < numFilosofosIniciales; i++) {
             tenedores[i] = new JButton("Tenedor " + i + " - Libre");
             tenedores[i].setBounds(300, 50 + i * 40, 200, 30);
@@ -65,22 +66,25 @@ public class FilosofoGui extends JFrame {
             tenedores[i].addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    // Cambiar el estado del tenedor (Libre a Ocupado o viceversa)
+                    // Modificamos para mostrar el filósofo en el JTextArea
+                    String mensaje = "Tenedor " + index + " - ";
                     if (estadosTenedores[index] == EstadoTenedor.LIBRE) {
                         estadosTenedores[index] = EstadoTenedor.OCUPADO;
+                        mensaje += "Ocupado por " + estadosFilosofos[index].getClass().getSimpleName();
                     } else {
                         estadosTenedores[index] = EstadoTenedor.LIBRE;
+                        mensaje += "Libre";
                     }
                     actualizarInterfaz();
+                    actualizarEstadoComida(mensaje);
                 }
             });
 
             add(tenedores[i]);
         }
 
-        // Crear botones para ajustar el tiempo de comida de los filósofos
         tiemposComer = new int[numFilosofosIniciales];
-        Arrays.fill(tiemposComer, 1000); // Inicializar con 1000 milisegundos (1 segundo)
+        Arrays.fill(tiemposComer, 1000);
         for (int i = 0; i < numFilosofosIniciales; i++) {
             JButton ajustarTiempoButton = new JButton("Ajustar Tiempo");
             ajustarTiempoButton.setBounds(500, 50 + i * 40, 150, 30);
@@ -89,7 +93,6 @@ public class FilosofoGui extends JFrame {
             ajustarTiempoButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    // Abrir un cuadro de diálogo para que el usuario ingrese el nuevo tiempo de comida
                     String nuevoTiempoStr = JOptionPane.showInputDialog("Nuevo tiempo de comida para Filósofo " + index + " (milisegundos):");
                     try {
                         int nuevoTiempo = Integer.parseInt(nuevoTiempoStr);
@@ -107,9 +110,14 @@ public class FilosofoGui extends JFrame {
             add(ajustarTiempoButton);
         }
 
-        // Botón para iniciar la simulación automáticamente
+        estadoComidaTextArea = new JTextArea();
+        estadoComidaTextArea.setEditable(false);
+        scrollPane = new JScrollPane(estadoComidaTextArea); // Agregamos el JScrollPane al JTextArea
+        scrollPane.setBounds(50, 50 + numFilosofosIniciales * 40 + 120, 500, 100);
+        add(scrollPane);
+
         JButton iniciarSimulacionButton = new JButton("Iniciar Simulación Automática");
-        iniciarSimulacionButton.setBounds(50, 50 + numFilosofosIniciales * 40, 250, 30);
+        iniciarSimulacionButton.setBounds(50, 50 + numFilosofosIniciales * 40 + 40, 250, 30);
         iniciarSimulacionButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -118,9 +126,8 @@ public class FilosofoGui extends JFrame {
         });
         add(iniciarSimulacionButton);
 
-        // Botón para detener la simulación
         JButton detenerSimulacionButton = new JButton("Detener Simulación");
-        detenerSimulacionButton.setBounds(320, 50 + numFilosofosIniciales * 40, 200, 30);
+        detenerSimulacionButton.setBounds(320, 50 + numFilosofosIniciales * 40 + 80, 200, 30);
         detenerSimulacionButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -129,7 +136,16 @@ public class FilosofoGui extends JFrame {
         });
         add(detenerSimulacionButton);
 
-        // Crear un temporizador para actualizar la interfaz cada cierto intervalo
+        JButton limpiarEstadoComidaButton = new JButton("Limpiar Estado de Comida");
+        limpiarEstadoComidaButton.setBounds(600, 50 + numFilosofosIniciales * 40 + 120, 200, 30);
+        limpiarEstadoComidaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                estadoComidaTextArea.setText("");
+            }
+        });
+        add(limpiarEstadoComidaButton);
+
         Timer timer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -138,25 +154,51 @@ public class FilosofoGui extends JFrame {
                 }
             }
         });
-        timer.start(); // Iniciar el temporizador
+        timer.start();
 
         setVisible(true);
     }
 
     private void actualizarInterfaz() {
         for (int i = 0; i < numFilosofos; i++) {
-            filosofos[i].setText("Filósofo " + i + " - " + estadosFilosofos[i].getNombreEstado());
+            if (estadosFilosofos[i] instanceof Pensando) {
+                filosofos[i].setText("Filósofo " + i + " - Pensando");
+                filosofos[i].setBackground(Color.BLUE); // Color azul cuando está pensando
+            } else if (estadosFilosofos[i] instanceof EsperandoTenedor) {
+                filosofos[i].setText("Filósofo " + i + " - EsperandoTenedor");
+                filosofos[i].setBackground(Color.ORANGE); // Color naranja cuando está esperando un tenedor
+            } else if (estadosFilosofos[i] instanceof Comiendo) {
+                filosofos[i].setText("Filósofo " + i + " - Comiendo");
+                filosofos[i].setBackground(Color.GREEN); // Color verde cuando está comiendo
+            }
         }
 
         for (int i = 0; i < numFilosofos; i++) {
-            tenedores[i].setText("Tenedor " + i + " - " + estadosTenedores[i].getNombreEstado());
+            if (estadosTenedores[i] == EstadoTenedor.OCUPADO) {
+                tenedores[i].setText("Tenedor " + i + " - Ocupado");
+                tenedores[i].setBackground(Color.RED);
+            } else {
+                tenedores[i].setText("Tenedor " + i + " - Libre");
+                tenedores[i].setBackground(null);
+            }
         }
+    }
+
+    private void actualizarEstadoComida(String mensaje) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                estadoComidaTextArea.append(mensaje + "\n");
+                // Scroll hasta la parte inferior
+                JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+                verticalScrollBar.setValue(verticalScrollBar.getMaximum());
+            }
+        });
     }
 
     private void iniciarSimulacion() {
         simulacionEnEjecucion = true;
 
-        // Crear e iniciar un hilo para cada filósofo
         Thread[] filosofoThreads = new Thread[numFilosofos];
         for (int i = 0; i < numFilosofos; i++) {
             final int index = i;
@@ -164,7 +206,6 @@ public class FilosofoGui extends JFrame {
                 @Override
                 public void run() {
                     while (simulacionEnEjecucion) {
-                        // Simular el proceso de pensar
                         estadosFilosofos[index] = new Pensando();
                         actualizarInterfaz();
                         try {
@@ -173,28 +214,46 @@ public class FilosofoGui extends JFrame {
                             e.printStackTrace();
                         }
 
-                        // Intentar tomar tenedores
                         estadosFilosofos[index] = new EsperandoTenedor();
                         actualizarInterfaz();
-                        // Obtener los tenedores correspondientes
                         Tenedor tenedorIzquierdo = mesa.getTenedorIzquierdo(index);
                         Tenedor tenedorDerecho = mesa.getTenedorDerecho(index);
-                        mesa.tomarTenedor(tenedorIzquierdo, tenedorDerecho, filosofos[index]);
+
+                        // Intenta tomar tenedores en un orden aleatorio
+                        if (random.nextBoolean()) {
+                            mesa.tomarTenedor(tenedorIzquierdo, tenedorDerecho, filosofos[index]);
+                            actualizarEstadoComida("Filósofo " + index + " está comiendo.");
+                        } else {
+                            mesa.tomarTenedor(tenedorDerecho, tenedorIzquierdo, filosofos[index]);
+                            actualizarEstadoComida("Filósofo " + index + " está comiendo.");
+                        }
+
                         actualizarInterfaz();
 
-                        // Simular el proceso de comer
+                        estadosTenedores[index] = EstadoTenedor.OCUPADO;
+                        actualizarInterfaz();
+
                         estadosFilosofos[index] = new Comiendo();
                         actualizarInterfaz();
                         try {
-                            Thread.sleep(tiemposComer[index]); // Utilizar el tiempo de comida ajustado
+                            Thread.sleep(tiemposComer[index]);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
 
-                        // Soltar tenedores
+                        estadosTenedores[index] = EstadoTenedor.LIBRE;
+                        actualizarInterfaz();
+
                         estadosFilosofos[index] = new Pensando();
                         actualizarInterfaz();
-                        mesa.soltarTenedor(tenedorIzquierdo, tenedorDerecho, filosofos[index]);
+
+                        // Suelta los tenedores en cualquier orden
+                        if (random.nextBoolean()) {
+                            mesa.soltarTenedor(tenedorIzquierdo, tenedorDerecho, filosofos[index]);
+                        } else {
+                            mesa.soltarTenedor(tenedorDerecho, tenedorIzquierdo, filosofos[index]);
+                        }
+
                         actualizarInterfaz();
                     }
                 }
@@ -211,8 +270,23 @@ public class FilosofoGui extends JFrame {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new FilosofoGui(5);
+                int numFilosofosIniciales = obtenerNumeroFilosofosInicial();
+                if (numFilosofosIniciales < 2 || numFilosofosIniciales > 10) {
+                    JOptionPane.showMessageDialog(null, "El número de participantes debe estar entre 2 y 10. Se utilizarán 5 filósofos por defecto.");
+                    numFilosofosIniciales = 5;
+                }
+                new FilosofoGui(numFilosofosIniciales);
             }
         });
+    }
+
+    private static int obtenerNumeroFilosofosInicial() {
+        String numFilosofosStr = JOptionPane.showInputDialog("Ingrese el número de filósofos:");
+        try {
+            return Integer.parseInt(numFilosofosStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Por favor, ingrese un número válido. Se utilizarán 5 filósofos por defecto.");
+            return 5;
+        }
     }
 }
