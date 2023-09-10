@@ -25,7 +25,8 @@ public class FilosofoGui extends JFrame {
     private Mesa mesa;
     private boolean simulacionEnEjecucion = true;
     private int[] tiemposComer;
-    private Random random = new Random();
+    private Random random;
+    private JTextArea estadoComidaTextArea;
 
     public FilosofoGui(int numFilosofosIniciales) {
         this.numFilosofos = numFilosofosIniciales;
@@ -34,6 +35,7 @@ public class FilosofoGui extends JFrame {
         this.filosofos = new JButton[numFilosofosIniciales];
         this.tenedores = new JButton[numFilosofosIniciales];
         this.mesa = new Mesa(numFilosofosIniciales, filosofos, tenedores);
+        this.random = new Random();
 
         setTitle("Cena de los Filósofos");
         setLayout(null);
@@ -102,6 +104,11 @@ public class FilosofoGui extends JFrame {
             add(ajustarTiempoButton);
         }
 
+        estadoComidaTextArea = new JTextArea();
+        estadoComidaTextArea.setBounds(50, 50 + numFilosofosIniciales * 40 + 120, 500, 100);
+        estadoComidaTextArea.setEditable(false);
+        add(estadoComidaTextArea);
+
         JButton iniciarSimulacionButton = new JButton("Iniciar Simulación Automática");
         iniciarSimulacionButton.setBounds(50, 50 + numFilosofosIniciales * 40 + 40, 250, 30);
         iniciarSimulacionButton.addActionListener(new ActionListener() {
@@ -121,6 +128,16 @@ public class FilosofoGui extends JFrame {
             }
         });
         add(detenerSimulacionButton);
+
+        JButton limpiarEstadoComidaButton = new JButton("Limpiar Estado de Comida");
+        limpiarEstadoComidaButton.setBounds(600, 50 + numFilosofosIniciales * 40 + 120, 200, 30);
+        limpiarEstadoComidaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                estadoComidaTextArea.setText("");
+            }
+        });
+        add(limpiarEstadoComidaButton);
 
         Timer timer = new Timer(1000, new ActionListener() {
             @Override
@@ -160,6 +177,15 @@ public class FilosofoGui extends JFrame {
         }
     }
 
+    private void actualizarEstadoComida(String mensaje) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                estadoComidaTextArea.append(mensaje + "\n");
+            }
+        });
+    }
+
     private void iniciarSimulacion() {
         simulacionEnEjecucion = true;
 
@@ -186,8 +212,10 @@ public class FilosofoGui extends JFrame {
                         // Intenta tomar tenedores en un orden aleatorio
                         if (random.nextBoolean()) {
                             mesa.tomarTenedor(tenedorIzquierdo, tenedorDerecho, filosofos[index]);
+                            actualizarEstadoComida("Filósofo " + index + " está comiendo.");
                         } else {
                             mesa.tomarTenedor(tenedorDerecho, tenedorIzquierdo, filosofos[index]);
+                            actualizarEstadoComida("Filósofo " + index + " está comiendo.");
                         }
 
                         actualizarInterfaz();
