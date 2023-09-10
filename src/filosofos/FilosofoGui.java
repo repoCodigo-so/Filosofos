@@ -146,6 +146,30 @@ public class FilosofoGui extends JFrame {
         });
         add(limpiarEstadoComidaButton);
 
+        JButton reiniciarButton = new JButton("Reiniciar Programa");
+        reiniciarButton.setBounds(600, 50 + numFilosofosIniciales * 40 + 40, 200, 30);
+        reiniciarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Cerrar la ventana actual
+                dispose();
+                
+                // Crear una nueva instancia de FilosofoGui para reiniciar el programa
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        int numFilosofosIniciales = obtenerNumeroFilosofosInicial();
+                        if (numFilosofosIniciales < 2 || numFilosofosIniciales > 10) {
+                            JOptionPane.showMessageDialog(null, "El número de participantes debe estar entre 2 y 10. Se utilizarán 5 filósofos por defecto.");
+                            numFilosofosIniciales = 5;
+                        }
+                        new FilosofoGui(numFilosofosIniciales);
+                    }
+                });
+            }
+        });
+        add(reiniciarButton);
+
         Timer timer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
