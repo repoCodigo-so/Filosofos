@@ -13,6 +13,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
+import java.util.Random;
 
 public class FilosofoGui extends JFrame {
 
@@ -24,6 +25,7 @@ public class FilosofoGui extends JFrame {
     private Mesa mesa;
     private boolean simulacionEnEjecucion = true;
     private int[] tiemposComer;
+    private Random random = new Random();
 
     public FilosofoGui(int numFilosofosIniciales) {
         this.numFilosofos = numFilosofosIniciales;
@@ -180,7 +182,14 @@ public class FilosofoGui extends JFrame {
                         actualizarInterfaz();
                         Tenedor tenedorIzquierdo = mesa.getTenedorIzquierdo(index);
                         Tenedor tenedorDerecho = mesa.getTenedorDerecho(index);
-                        mesa.tomarTenedor(tenedorIzquierdo, tenedorDerecho, filosofos[index]);
+
+                        // Intenta tomar tenedores en un orden aleatorio
+                        if (random.nextBoolean()) {
+                            mesa.tomarTenedor(tenedorIzquierdo, tenedorDerecho, filosofos[index]);
+                        } else {
+                            mesa.tomarTenedor(tenedorDerecho, tenedorIzquierdo, filosofos[index]);
+                        }
+
                         actualizarInterfaz();
 
                         estadosTenedores[index] = EstadoTenedor.OCUPADO;
@@ -199,7 +208,14 @@ public class FilosofoGui extends JFrame {
 
                         estadosFilosofos[index] = new Pensando();
                         actualizarInterfaz();
-                        mesa.soltarTenedor(tenedorIzquierdo, tenedorDerecho, filosofos[index]);
+
+                        // Suelta los tenedores en cualquier orden
+                        if (random.nextBoolean()) {
+                            mesa.soltarTenedor(tenedorIzquierdo, tenedorDerecho, filosofos[index]);
+                        } else {
+                            mesa.soltarTenedor(tenedorDerecho, tenedorIzquierdo, filosofos[index]);
+                        }
+
                         actualizarInterfaz();
                     }
                 }
