@@ -28,28 +28,32 @@ public class Tenedor {
         }
         disponible = false; // Marcar el tenedor como no disponible
 
-        // Actualizar el estado del botón del tenedor a Ocupado y su color a Rojo
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                botonTenedor.setText("Tenedor " + id + " - Ocupado");
-                botonTenedor.setBackground(java.awt.Color.RED);
-            }
-        });
+        // Verificar si el botón del tenedor no es nulo antes de modificarlo
+        if (botonTenedor != null) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    botonTenedor.setText("Tenedor " + id + " - Ocupado");
+                    botonTenedor.setBackground(java.awt.Color.RED);
+                }
+            });
+        }
     }
 
     public synchronized void soltar() {
         disponible = true; // Marcar el tenedor como disponible
         notify(); // Notificar a otros hilos que el tenedor está disponible
 
-        // Actualizar el estado del botón del tenedor a Libre y restablecer su color
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                botonTenedor.setText("Tenedor " + id + " - Libre");
-                botonTenedor.setBackground(null);
-            }
-        });
+        // Verificar si el botón del tenedor no es nulo antes de modificarlo
+        if (botonTenedor != null) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    botonTenedor.setText("Tenedor " + id + " - Libre");
+                    botonTenedor.setBackground(null);
+                }
+            });
+        }
     }
 
     public boolean estaDisponible() {

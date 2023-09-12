@@ -152,7 +152,7 @@ public class FilosofoGui extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 // Cerrar la ventana actual
                 dispose();
-                
+
                 // Crear una nueva instancia de FilosofoGui para reiniciar el programa
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
@@ -169,7 +169,7 @@ public class FilosofoGui extends JFrame {
         });
         add(reiniciarButton);
 
-        Timer timer = new Timer(1000, new ActionListener() {
+        Timer timer = new Timer(100, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (simulacionEnEjecucion) {
@@ -253,7 +253,8 @@ public class FilosofoGui extends JFrame {
 
                         actualizarInterfaz();
 
-                        estadosTenedores[index] = EstadoTenedor.OCUPADO;
+                        estadosTenedores[tenedorIzquierdo.getId()] = EstadoTenedor.OCUPADO;
+                        estadosTenedores[tenedorDerecho.getId()] = EstadoTenedor.OCUPADO;
                         actualizarInterfaz();
 
                         estadosFilosofos[index] = new Comiendo();
@@ -264,18 +265,15 @@ public class FilosofoGui extends JFrame {
                             e.printStackTrace();
                         }
 
-                        estadosTenedores[index] = EstadoTenedor.LIBRE;
-                        actualizarInterfaz();
-
-                        estadosFilosofos[index] = new Pensando();
-                        actualizarInterfaz();
-
                         // Suelta los tenedores en cualquier orden
                         if (random.nextBoolean()) {
                             mesa.soltarTenedor(tenedorIzquierdo, tenedorDerecho, filosofos[index]);
                         } else {
                             mesa.soltarTenedor(tenedorDerecho, tenedorIzquierdo, filosofos[index]);
                         }
+
+                        estadosTenedores[tenedorIzquierdo.getId()] = EstadoTenedor.LIBRE;
+                        estadosTenedores[tenedorDerecho.getId()] = EstadoTenedor.LIBRE;
 
                         actualizarInterfaz();
                     }
@@ -287,6 +285,7 @@ public class FilosofoGui extends JFrame {
 
     private void detenerSimulacion() {
         simulacionEnEjecucion = false;
+        resetFilosofos();
     }
 
     public static void main(String[] args) {
@@ -301,6 +300,14 @@ public class FilosofoGui extends JFrame {
                 new FilosofoGui(numFilosofosIniciales);
             }
         });
+    }
+
+    // Agrega este método en la clase FilosofoGui
+    private void resetFilosofos() {
+        for (int i = 0; i < numFilosofos; i++) {
+            estadosFilosofos[i] = new Pensando();
+        }
+        actualizarInterfaz();
     }
 
     private static int obtenerNumeroFilosofosInicial() {

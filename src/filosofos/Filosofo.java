@@ -64,7 +64,7 @@ public class Filosofo implements Runnable {
         System.out.println("Filósofo " + id + " está comiendo.");
         try {
             // Simula el tiempo que el filósofo pasa comiendo
-            Thread.sleep((long) (Math.random() * 1000));
+            Thread.sleep((long) (Math.random() * 10000));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
