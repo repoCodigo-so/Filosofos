@@ -285,7 +285,7 @@ public class FilosofoGui extends JFrame {
 
     private void detenerSimulacion() {
         simulacionEnEjecucion = false;
-        resetFilosofos();
+        resetFilosofos();   
     }
 
     public static void main(String[] args) {

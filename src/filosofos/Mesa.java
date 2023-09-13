@@ -76,17 +76,6 @@ public class Mesa {
                 botonesTenedores[tenedorIzquierdo.getId()].setBackground(java.awt.Color.RED);
             }
         });
-
-        // Actualizar el estado y color del botón del tenedor derecho a Ocupado y Rojo
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                botonesTenedores[tenedorDerecho.getId()].setText("Tenedor " + tenedorDerecho.getId() + " - Ocupado");
-                botonesTenedores[tenedorDerecho.getId()].setBackground(java.awt.Color.RED);
-                botonesTenedores[tenedorIzquierdo.getId()].setText("Tenedor " + tenedorIzquierdo.getId() + " - Ocupado");
-                botonesTenedores[tenedorIzquierdo.getId()].setBackground(java.awt.Color.RED);
-            }
-        });
     }
 
     public synchronized void soltarTenedor(Tenedor tenedorIzquierdo, Tenedor tenedorDerecho, JButton botonFilosofo) {
@@ -103,17 +92,6 @@ public class Mesa {
         });
 
         // Actualizar el estado y color del botón del tenedor izquierdo a Libre y restablecer su color
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                botonesTenedores[tenedorDerecho.getId()].setText("Tenedor " + tenedorDerecho.getId() + " - Libre");
-                botonesTenedores[tenedorDerecho.getId()].setBackground(null);
-                botonesTenedores[tenedorIzquierdo.getId()].setText("Tenedor " + tenedorIzquierdo.getId() + " - Libre");
-                botonesTenedores[tenedorIzquierdo.getId()].setBackground(null);
-            }
-        });
-
-        // Actualizar el estado y color del botón del tenedor derecho a Libre y restablecer su color
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
